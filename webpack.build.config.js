@@ -1,10 +1,8 @@
 var path = require("path");
 var webpack = require("webpack");
 
-var ExtractTextPlugin = require("extract-text-webpack-plugin");
-const mainStyle = new ExtractTextPlugin("main.css");
-const commonStyle = new ExtractTextPlugin("common.css");
-const customStyle = new ExtractTextPlugin("custom.css");
+var ExtractTextPlugin = require("extract-text-webpack-plugin"); // css文件单独打包
+var OptimizeCssplugin = require("optimize-css-assets-webpack-plugin"); // 压缩css文件
 
 module.exports = {
 	devtool: false,
@@ -12,7 +10,11 @@ module.exports = {
 		bundle: __dirname + "/src/resource.js",
 		vendor: ["react", "react-dom", "redux", "react-redux"],
 		common: [__dirname + "/public/js/index.js"],
-		custom: [__dirname + "/public/js/main/login.js"],
+		custom: [
+			__dirname + "/public/js/main/login.js",
+			__dirname + "/public/css/index.css",
+			__dirname + "/public/css/main/login.css",
+		],
 	},
 	output: {
 		path: __dirname + "/public/build",
@@ -49,9 +51,8 @@ module.exports = {
 			chunks: ["custom"],
 			filename: "[name].js",
 		}),
-		mainStyle,
-		commonStyle,
-		customStyle,
+		new ExtractTextPlugin("main.css"),
+		new OptimizeCssplugin(),
 	],
 	module: {
 		loaders: [
@@ -66,33 +67,11 @@ module.exports = {
 			{ test: /\.(png|jpg|gif)$/, loader: "url?limit=819200" },
 			{
 				test: /\.css$/,
-				loader: mainStyle.extract("style", "css!postcss"),
+				loader: ExtractTextPlugin.extract("style", "css!postcss"),
 			},
 			{
 				test: /\.scss$/,
-				loader: mainStyle.extract("style", "css!postcss!sass"),
-			},
-			{
-				test: /\.css$/i,
-				loader: commonStyle.extract("style", "css!postcss!sass"),
-				include: __dirname + "/public/css/common/",
-			},
-			{
-				test: /\.scss$/i,
-				loader: commonStyle.extract("style", "css!postcss!sass"),
-				include: __dirname + "/public/css/common/",
-			},
-			{
-				test: /\.css$/i,
-				loader: customStyle.extract("style", "css!postcss!sass"),
-				include: __dirname + "/public/css/",
-				exclude: __dirname + "/public/css/common/",
-			},
-			{
-				test: /\.scss$/i,
-				loader: customStyle.extract("style", "css!postcss!sass"),
-				include: __dirname + "/public/css/",
-				exclude: __dirname + "/public/css/common/",
+				loader: ExtractTextPlugin.extract("style", "css!postcss!sass"),
 			},
 		],
 	},
